@@ -339,6 +339,13 @@
             border-bottom: 1px solid var(--line);
         }
 
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(280px, 1fr));
+            gap: 18px;
+            align-items: start;
+        }
+
         .score {
             display: inline-flex;
             min-width: 58px;
@@ -358,7 +365,8 @@
 
             .topbar,
             .workspace,
-            .rating-grid {
+            .rating-grid,
+            .events-grid {
                 grid-template-columns: 1fr;
                 display: grid;
             }
@@ -404,6 +412,7 @@
         <button class="tab" data-view="categories" type="button">Категории</button>
         <button class="tab" data-view="pricing" type="button">Цены</button>
         <button class="tab" data-view="inventory" type="button">Остатки</button>
+        <button class="tab" data-view="events" type="button">События</button>
         <button class="tab" data-view="ranking" type="button">Рейтинг</button>
     </nav>
 
@@ -521,7 +530,60 @@
             renderRanking();
             return;
         }
+        if (state.active === "events") {
+            renderEvents();
+            return;
+        }
         renderCrud(state.active);
+    }
+
+    function renderEvents() {
+        const app = document.getElementById("app");
+        app.innerHTML = `
+            <section class="events-grid">
+                <aside class="tool">
+                    <h2>Продажа</h2>
+                    <form data-event-form="sale">
+                        <label>Товар
+                            <select name="productId" required>
+                                <option value="">Выберите товар</option>
+                                ${state.data.products.map(product => `<option value="${product.id}">${escapeHtml(product.name)} · ${money(product.price)}</option>`).join("")}
+                            </select>
+                        </label>
+                        <label>Количество
+                            <input name="quantity" type="number" min="1" step="1" value="1" required>
+                        </label>
+                        <label>Цена за единицу
+                            <input name="price" type="number" min="0" step="0.01">
+                        </label>
+                        <label>User ID
+                            <input name="userId" type="text" placeholder="UUID">
+                        </label>
+                        <div class="form-actions">
+                            <button class="primary" type="submit" title="Записать продажу"><span aria-hidden="true">+</span>Записать</button>
+                        </div>
+                    </form>
+                </aside>
+                <aside class="tool">
+                    <h2>Клик</h2>
+                    <form data-event-form="click">
+                        <label>Товар
+                            <select name="productId" required>
+                                <option value="">Выберите товар</option>
+                                ${state.data.products.map(product => `<option value="${product.id}">${escapeHtml(product.name)}</option>`).join("")}
+                            </select>
+                        </label>
+                        <label>User ID
+                            <input name="userId" type="text" placeholder="UUID">
+                        </label>
+                        <div class="form-actions">
+                            <button class="primary" type="submit" title="Записать клик"><span aria-hidden="true">+</span>Записать</button>
+                        </div>
+                    </form>
+                    <div class="status ${state.status.startsWith("Ошибка") ? "error" : ""}">${state.status}</div>
+                </aside>
+            </section>
+        `;
     }
 
     function renderCrud(entity) {
@@ -747,6 +809,43 @@
         } catch (error) {
             state.status = `Ошибка: ${error.message}`;
             renderCrud(entity);
+        }
+    });
+
+    document.addEventListener("submit", async event => {
+        const form = event.target.closest("form[data-event-form]");
+        if (!form) {
+            return;
+        }
+        event.preventDefault();
+        const values = Object.fromEntries(new FormData(form).entries());
+        const userId = values.userId && values.userId.trim() ? values.userId.trim() : undefined;
+        try {
+            if (form.dataset.eventForm === "sale") {
+                const item = {
+                    productId: values.productId,
+                    quantity: Number(values.quantity)
+                };
+                if (values.price) {
+                    item.price = Number(values.price);
+                }
+                await request("/api/sales/append", {
+                    method: "POST",
+                    body: JSON.stringify({ userId, items: [item] })
+                });
+                state.status = "Продажа записана";
+            } else {
+                await request("/api/clicks/append", {
+                    method: "POST",
+                    body: JSON.stringify({ userId, productId: values.productId })
+                });
+                state.status = "Клик записан";
+            }
+            await loadAll();
+            renderEvents();
+        } catch (error) {
+            state.status = `Ошибка: ${error.message}`;
+            renderEvents();
         }
     });
 

@@ -33,14 +33,12 @@ public class ProductService {
         this.inventoryRepository = inventoryRepository;
     }
 
-    @Transactional(readOnly = true)
     public List<ProductResponse> list() {
         return productRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt")).stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
     public ProductResponse get(UUID id) {
         return toResponse(findProduct(id));
     }
@@ -59,7 +57,6 @@ public class ProductService {
         return toResponse(productRepository.save(product));
     }
 
-    @Transactional
     public void delete(UUID id) {
         if (!productRepository.existsById(id)) {
             throw new ResourceNotFoundException("Product not found: " + id);

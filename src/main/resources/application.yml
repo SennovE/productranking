@@ -2,10 +2,10 @@ spring:
   application:
     name: product-ranking-service
   datasource:
-    url: jdbc:h2:mem:product_ranking;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:product_ranking;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER:org.h2.Driver}
+    username: ${SPRING_DATASOURCE_USERNAME:sa}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
   flyway:
     enabled: true
   h2:
@@ -19,6 +19,18 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          time_zone: UTC
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID:product-ranking-service}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 server:
   port: 8080
@@ -33,3 +45,11 @@ management:
     web:
       exposure:
         include: health,info
+
+app:
+  kafka:
+    listener-enabled: ${APP_KAFKA_LISTENER_ENABLED:false}
+    sales-topic: ${APP_KAFKA_SALES_TOPIC:sales.events}
+    product-click-topic: ${APP_KAFKA_PRODUCT_CLICK_TOPIC:products.click}
+  ranking:
+    default-windows: ${APP_RANKING_DEFAULT_WINDOWS:7,30}

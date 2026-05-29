@@ -63,6 +63,19 @@ create table order_items (
 create index idx_order_items_order_id on order_items(order_id);
 create index idx_order_items_product_id on order_items(product_id);
 
+create table product_clicks (
+    id uuid primary key,
+    created_at timestamp not null,
+    updated_at timestamp not null,
+    product_id uuid not null,
+    user_id uuid,
+    clicked_at timestamp not null,
+    constraint fk_product_clicks_product foreign key (product_id) references products(id) on delete cascade
+);
+
+create index idx_product_clicks_product_id on product_clicks(product_id);
+create index idx_product_clicks_clicked_at on product_clicks(clicked_at);
+
 create table scores (
     id uuid primary key,
     created_at timestamp not null,

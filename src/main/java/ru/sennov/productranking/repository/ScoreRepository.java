@@ -14,4 +14,7 @@ public interface ScoreRepository extends JpaRepository<Score, UUID> {
 
     @EntityGraph(attributePaths = {"product", "product.category", "product.pricing", "product.inventory"})
     List<Score> findByWindowDaysOrderByScoreDesc(Integer windowDays);
+
+    @EntityGraph(attributePaths = {"product", "product.category", "product.pricing", "product.inventory"})
+    List<Score> findByWindowDaysAndProductCategoryIdOrderByScoreDesc(Integer windowDays, UUID categoryId);
 }
