@@ -2,7 +2,6 @@ package ru.sennov.productranking.service;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.sennov.productranking.api.dto.ProductClickRequest;

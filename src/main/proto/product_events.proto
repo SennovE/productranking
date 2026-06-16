@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package ru.sennov.productranking.grpc.v1;
+
+option java_multiple_files = true;
+option java_package = "ru.sennov.productranking.grpc.api";
+option java_outer_classname = "ProductEventsProto";
+
+import "google/protobuf/timestamp.proto";
+
+service ProductEventsService {
+  rpc RecordProductClick(ProductClickEventRequest) returns (ProductClickEventResponse);
+  rpc RecordSaleEvent(SaleEventRequest) returns (SaleEventResponse);
+}
+
+message ProductClickEventRequest {
+  string product_id = 1;
+  string user_id = 2;
+  google.protobuf.Timestamp clicked_at = 3;
+}
+
+message ProductClickEventResponse {
+  string click_id = 1;
+  string product_id = 2;
+  string product_name = 3;
+  string user_id = 4;
+  google.protobuf.Timestamp clicked_at = 5;
+  google.protobuf.Timestamp created_at = 6;
+}
+
+message SaleEventRequest {
+  string order_id = 1;
+  string user_id = 2;
+  google.protobuf.Timestamp purchased_at = 3;
+  repeated SaleItem items = 4;
+}
+
+message SaleItem {
+  string product_id = 1;
+  int32 quantity = 2;
+  string price = 3;
+  string total_price = 4;
+}
+
+message SaleEventResponse {
+  string order_id = 1;
+  string user_id = 2;
+  google.protobuf.Timestamp purchased_at = 3;
+  string total_price = 4;
+  int32 items_count = 5;
+  repeated string affected_product_ids = 6;
+}

@@ -47,6 +47,9 @@ management:
         include: health,info
 
 app:
+  grpc:
+    enabled: ${APP_GRPC_ENABLED:true}
+    port: ${APP_GRPC_PORT:9090}
   kafka:
     listener-enabled: ${APP_KAFKA_LISTENER_ENABLED:false}
     sales-topic: ${APP_KAFKA_SALES_TOPIC:sales.events}
